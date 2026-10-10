@@ -1,44 +1,39 @@
-import Link from "next/link";
+import type { Metadata } from "next";
 import AutoVideo from "@/components/AutoVideo";
 import Button, { Arrow } from "@/components/Button";
 import Countdown from "@/components/Countdown";
 import { PosterOrPlaceholder } from "@/components/EventFeature";
+import Link from "@/components/LocaleLink";
 import CtaBand from "@/components/CtaBand";
 import Marquee from "@/components/Marquee";
 import Photo from "@/components/Photo";
 import SectionHeading from "@/components/SectionHeading";
 import { img, type Photo as P } from "@/lib/images";
 import { getFeatured } from "@/lib/events";
-import { dayLabel, dayNum, fullTitle, monShort, timeRange } from "@/lib/event-types";
+import { dayLabel, dayNum, fullTitle, localizeEvent, monShort, timeRange } from "@/lib/event-types";
+import { hasLocale } from "@/lib/i18n/config";
+import { fmt, rich } from "@/lib/i18n/rich";
+import { dictFor, getT, pageMeta } from "@/lib/i18n/server";
 import { site } from "@/lib/site";
 
 const pillars = [
   {
     n: "01",
-    title: "Events",
     href: "/events",
-    cta: "View events",
-    text: "Afrobeat nights, open-air summer sessions, live drums and dance — where everyone belongs on the floor.",
     photo: img.clubHandsUp,
     panel: "bg-ember text-cream",
     tilt: "-1.5deg",
   },
   {
     n: "02",
-    title: "Humanity",
     href: "/humanity",
-    cta: "See our impact",
-    text: "Shared meals, learning and care for children in Senegal. Culture that gives back to where it was born.",
     photo: img.humanityGroup,
     panel: "bg-leaf text-cream",
     tilt: "1.2deg",
   },
   {
     n: "03",
-    title: "Dakar Bazaar",
     href: "/dakar-bazaar",
-    cta: "Join the waitlist",
-    text: "An online marketplace for African-inspired fashion, art, textiles and lifestyle. Opening soon.",
     photo: img.stageDancerJump,
     panel: "bg-sun text-ink",
     tilt: "-1deg",
@@ -66,8 +61,17 @@ function PhotoRow({ items, reverse, speed }: { items: P[]; reverse?: boolean; sp
   );
 }
 
+export async function generateMetadata({ params }: PageProps<"/[lang]">): Promise<Metadata> {
+  const { lang } = await params;
+  if (!hasLocale(lang)) return {};
+  return pageMeta(lang, "/", undefined, dictFor(lang).meta.description);
+}
+
 export default async function Home() {
-  const ev = await getFeatured();
+  const { t, locale } = await getT();
+  const h = t.home;
+  const featured = await getFeatured();
+  const ev = featured ? localizeEvent(featured, locale) : null;
   return (
     <>
       {/* ───────────── HERO ───────────── */}
@@ -82,33 +86,33 @@ export default async function Home() {
           <div className="lg:col-span-7">
             <p className="eyebrow fade-up mb-7 inline-flex items-center gap-3 rounded-full bg-cream/5 px-4 py-2 text-sun ring-1 ring-cream/10">
               <span className="eq" aria-hidden="true"><i /><i /><i /><i /></span>
-              Culture · Events · Community · Commerce
+              {h.eyebrow}
             </p>
-            <h1 className="text-[clamp(3.3rem,10vw,9rem)] font-extrabold leading-[0.9]">
+            <h1 className="hero-title text-[clamp(3.3rem,10vw,9rem)] font-extrabold leading-[0.9]">
               <span className="slide-up block">
-                Say <span className="accent tricolor-text pr-[0.06em]">Waaw</span>
+                {h.say} <span className="accent tricolor-text pr-[0.06em]">Waaw</span>
               </span>
               <span className="slide-up block" style={{ ["--d" as string]: "80ms" }}>
-                to{" "}
+                {h.to && <>{h.to} </>}
                 <span className="word-rotator">
-                  <span className="text-sun">culture.</span>
-                  <span className="text-ember" aria-hidden="true">rhythm.</span>
-                  <span className="text-leaf" aria-hidden="true">family.</span>
-                  <span className="text-flame" aria-hidden="true">Dakar.</span>
+                  {h.words.map((w, i) => (
+                    <span key={w} className={["text-sun", "text-ember", "text-leaf", "text-flame"][i % 4]} aria-hidden={i > 0 || undefined}>
+                      {w}
+                    </span>
+                  ))}
                 </span>
               </span>
             </h1>
             <p className="slide-up mt-8 max-w-xl text-lg leading-relaxed text-cream/80 md:text-xl" style={{ ["--d" as string]: "160ms" }}>
-              <strong className="font-bold text-cream">“Waaw” means yes in Wolof.</strong> We say yes to rhythm, roots and each other — bringing
-              Africa’s energy to Finland through unforgettable nights, community work and creative commerce.
+              <strong className="font-bold text-cream">{h.introStrong}</strong> {h.intro}
             </p>
             <div className="fade-up mt-10 flex flex-wrap gap-3" style={{ ["--d" as string]: "340ms" }}>
-              <Button href="/events">Explore</Button>
-              <Button href="/dakar-bazaar" variant="ember">Shop</Button>
-              <Button href="/contact?topic=join" variant="ghost">Join Us</Button>
+              <Button href="/events">{h.explore}</Button>
+              <Button href="/dakar-bazaar" variant="ember">{h.shop}</Button>
+              <Button href="/contact?topic=join" variant="ghost">{t.common.joinUs}</Button>
             </div>
-            <ul className="fade-up mt-10 flex flex-wrap gap-2" style={{ ["--d" as string]: "440ms" }} aria-label="What you’ll hear">
-              {["Afrobeats", "Amapiano", "Dancehall", "Live djembe", "Sabar dance"].map((g, i) => (
+            <ul className="fade-up mt-10 flex flex-wrap gap-2" style={{ ["--d" as string]: "440ms" }} aria-label={h.genresLabel}>
+              {h.genres.map((g, i) => (
                 <li key={g} className={`rounded-full px-3.5 py-1.5 text-xs font-bold ${["bg-leaf/20 text-leaf", "bg-sun/15 text-sun", "bg-ember/20 text-[#ff6b5f]", "bg-flame/20 text-flame", "bg-cream/10 text-cream"][i]}`}>
                   {g}
                 </li>
@@ -120,9 +124,9 @@ export default async function Home() {
           <div className="relative mx-auto h-[440px] w-full max-w-md sm:h-[540px] lg:col-span-5 lg:max-w-none">
             <div aria-hidden="true" className="absolute right-[6%] top-[4%] h-[80%] w-[62%] rotate-6 rounded-[2rem] bg-gradient-to-br from-leaf via-sun to-ember" />
             <div className="fade-up absolute right-[10%] top-0 h-[78%] w-[60%] -rotate-2 overflow-hidden rounded-[2rem] bg-ink-3 shadow-2xl ring-4 ring-ink" style={{ ["--d" as string]: "150ms" }}>
-              <AutoVideo src="/video/dancefloor.mp4" poster="/video/dancefloor.jpg" label="Crowd dancing at a WaawAfrica Afrobeat night" eager />
+              <AutoVideo src="/video/dancefloor.mp4" poster="/video/dancefloor.jpg" label={h.videoLabel} eager />
               <span className="eyebrow absolute left-3 top-3 inline-flex items-center gap-2 rounded-full bg-ink/75 px-3 py-1.5 text-[0.6rem] text-cream">
-                <span className="size-2 animate-pulse rounded-full bg-ember" /> Live from the floor
+                <span className="size-2 animate-pulse rounded-full bg-ember" /> {h.live}
               </span>
             </div>
             <div className="fade-up absolute bottom-2 left-0 h-[50%] w-[44%]" style={{ ["--d" as string]: "300ms" }}>
@@ -135,16 +139,16 @@ export default async function Home() {
               >
                 <span className="flex size-12 shrink-0 flex-col items-center justify-center rounded-xl bg-ink font-display text-lg font-extrabold leading-none text-sun">
                   {dayNum(ev.startISO)}
-                  <span className="mt-0.5 text-[0.6rem]">{monShort(ev.startISO)}</span>
+                  <span className="mt-0.5 text-[0.6rem]">{monShort(ev.startISO, locale)}</span>
                 </span>
-                <span className="text-sm font-bold leading-tight">Next up: {fullTitle(ev)} →</span>
+                <span className="text-sm font-bold leading-tight">{fmt(t.event.nextUp, { title: fullTitle(ev) })}</span>
               </Link>
             )}
             <div aria-hidden="true" className="absolute -left-2 top-2 hidden size-28 sm:block">
               <svg viewBox="0 0 100 100" className="spin-slow size-full">
                 <defs><path id="c" d="M50 50 m-38 0 a38 38 0 1 1 76 0 a38 38 0 1 1 -76 0" /></defs>
                 <text fontSize="10.5" fontWeight="700" letterSpacing="3" fill="var(--color-sun)">
-                  <textPath href="#c">BE MULTICULTURAL • BE MULTICULTURAL •</textPath>
+                  <textPath href="#c">{h.badge}</textPath>
                 </text>
               </svg>
               <span className="absolute inset-0 grid place-items-center text-2xl text-ember">✦</span>
@@ -156,10 +160,10 @@ export default async function Home() {
       {/* ───────────── CROSSING TAPES ───────────── */}
       <div className="relative z-10 -my-6 overflow-hidden py-10" aria-hidden="true">
         <div className="-rotate-3 bg-sun py-3 text-ink shadow-xl">
-          <Marquee items={["Afrobeats", "Amapiano", "Djembe", "Dancehall", "Dakar", "Jyväskylä", "Community", "Be Multicultural"]} className="font-display text-2xl font-extrabold uppercase md:text-4xl" speed="34s" />
+          <Marquee items={h.tapeA} className="font-display text-2xl font-extrabold uppercase md:text-4xl" speed="34s" />
         </div>
         <div className="absolute -inset-x-4 top-1/2 -translate-y-1/2 rotate-3 bg-leaf py-2 text-cream shadow-xl">
-          <Marquee items={["Say Waaw", "Teranga", "Joy", "Rhythm", "Roots", "Respect", "Say Waaw", "Togetherness"]} className="font-display text-xl font-extrabold uppercase md:text-2xl" speed="40s" reverse />
+          <Marquee items={h.tapeB} className="font-display text-xl font-extrabold uppercase md:text-2xl" speed="40s" reverse />
         </div>
       </div>
 
@@ -169,7 +173,7 @@ export default async function Home() {
         {ev ? (
           <div className="container-x grid items-center gap-12 lg:grid-cols-12 lg:gap-14">
             <div data-reveal="scale" className="relative mx-auto w-full max-w-[18rem] sm:max-w-xs lg:col-span-4 lg:max-w-none">
-              <Link href={`/events/${ev.slug}`} className="block" aria-label={`${fullTitle(ev)} — details`}>
+              <Link href={`/events/${ev.slug}`} className="block" aria-label={fmt(t.event.detailsAria, { title: fullTitle(ev) })}>
                 <PosterOrPlaceholder e={ev} sizes="(min-width:1024px) 26vw, 75vw" className="tilt relative -rotate-3 rounded-3xl shadow-2xl ring-8 ring-ink/30 [--tilt:0deg]" />
               </Link>
               {ev.tickets[0]?.price && (
@@ -180,11 +184,11 @@ export default async function Home() {
             </div>
             <div className="min-w-0 lg:col-span-7 lg:col-start-6">
               <p data-reveal className="eyebrow mb-5 inline-flex items-center gap-3 rounded-full bg-ink/25 px-4 py-2 text-sun">
-                <span className="eq" aria-hidden="true"><i /><i /><i /><i /></span> Next event{ev.subtitle ? ` · ${ev.subtitle}` : ""}
+                <span className="eq" aria-hidden="true"><i /><i /><i /><i /></span> {h.next.eyebrow}{ev.subtitle ? ` · ${ev.subtitle}` : ""}
               </p>
               <h2 data-reveal className="text-[clamp(2.4rem,6.5vw,5.8rem)] font-extrabold">{ev.title}</h2>
               <p data-reveal className="mt-5 max-w-xl text-lg font-semibold text-cream/90 md:text-xl">
-                {dayLabel(ev.startISO)} · {timeRange(ev)} · {[ev.venue, ev.address].filter(Boolean).join(", ")}
+                {dayLabel(ev.startISO, locale)} · {timeRange(ev)} · {[ev.venue, ev.address].filter(Boolean).join(", ")}
               </p>
               {ev.lineup.length > 0 && (
                 <ul data-reveal className="mt-6 flex flex-wrap gap-2">
@@ -197,19 +201,19 @@ export default async function Home() {
                 <Countdown to={ev.startISO} endISO={ev.endISO} />
               </div>
               <div data-reveal className="mt-8 flex flex-wrap gap-3">
-                <Button href={`/events/${ev.slug}`} variant="sun">Register</Button>
-                <Button href="/events" variant="ghost">View all events</Button>
+                <Button href={`/events/${ev.slug}`} variant="sun">{h.next.register}</Button>
+                <Button href="/events" variant="ghost">{h.next.viewAll}</Button>
               </div>
             </div>
           </div>
         ) : (
           <div className="container-x text-center">
-            <p data-reveal className="eyebrow mb-5 text-sun">Next event</p>
-            <h2 data-reveal className="mx-auto max-w-3xl text-[clamp(2.4rem,6vw,5rem)] font-extrabold">New dates are <span className="accent text-sun">cooking.</span></h2>
-            <p data-reveal className="mx-auto mt-5 max-w-lg text-lg text-cream/90">Follow {site.socials.instagramHandle} or get in touch to hear first.</p>
+            <p data-reveal className="eyebrow mb-5 text-sun">{h.next.eyebrow}</p>
+            <h2 data-reveal className="mx-auto max-w-3xl text-[clamp(2.4rem,6vw,5rem)] font-extrabold">{rich(h.next.emptyTitle)}</h2>
+            <p data-reveal className="mx-auto mt-5 max-w-lg text-lg text-cream/90">{fmt(h.next.emptyText, { ig: site.socials.instagramHandle })}</p>
             <div data-reveal className="mt-8 flex flex-wrap justify-center gap-3">
-              <Button href={site.socials.instagram} external variant="sun">Follow on Instagram</Button>
-              <Button href="/contact?topic=events" variant="ghost">Get notified</Button>
+              <Button href={site.socials.instagram} external variant="sun">{h.next.follow}</Button>
+              <Button href="/contact?topic=events" variant="ghost">{h.next.notify}</Button>
             </div>
           </div>
         )}
@@ -219,26 +223,24 @@ export default async function Home() {
       <section className="relative bg-cream py-16 text-ink sm:py-24 md:py-32">
         <div className="container-x grid gap-14 lg:grid-cols-12">
           <div className="lg:col-span-7">
-            <p data-reveal className="eyebrow mb-6 text-ember">Who we are</p>
+            <p data-reveal className="eyebrow mb-6 text-ember">{h.who.eyebrow}</p>
             <p data-reveal className="font-display text-[clamp(1.9rem,3.6vw,3.3rem)] font-bold leading-[1.08] tracking-tight">
-              A cultural movement born between <span className="accent text-earth">Dakar</span> and <span className="accent text-leaf">Finland</span> — turning
-              music, dance and togetherness into moments people never forget.
+              {rich(h.who.statement, ["text-earth", "text-leaf"])}
             </p>
             <div data-reveal className="mt-10 grid gap-6 sm:grid-cols-2">
               <p className="text-lg leading-relaxed text-ink/75">
-                From packed Afrobeat dance floors to open-air sessions in the pines, from school drum workshops to shared meals with children in Senegal —
-                everything we do is about connection.
+                {h.who.body}
               </p>
               <div className="relative overflow-hidden rounded-3xl bg-ink p-7 text-cream">
                 <span aria-hidden="true" className="kente absolute inset-x-0 top-0 h-1.5" />
-                <p className="eyebrow mb-3 text-sun">Our mission</p>
+                <p className="eyebrow mb-3 text-sun">{h.who.missionEyebrow}</p>
                 <p className="text-lg font-semibold leading-snug">
-                  To connect people through African culture — celebrating it, sharing it, and giving back to the communities where it began.
+                  {h.who.mission}
                 </p>
               </div>
             </div>
             <div data-reveal className="mt-10">
-              <Button href="/about" variant="dark">Our story</Button>
+              <Button href="/about" variant="dark">{h.who.story}</Button>
             </div>
           </div>
           <div className="relative grid grid-cols-2 gap-4 lg:col-span-5">
@@ -255,8 +257,8 @@ export default async function Home() {
       <section className="py-16 sm:py-24 md:py-32">
         <div className="container-x">
           <div className="flex flex-col justify-between gap-6 md:flex-row md:items-end">
-            <SectionHeading eyebrow="What we do" title={<>Three ways to <span className="accent text-sun">say yes.</span></>} />
-            <p data-reveal className="max-w-sm text-cream/70">One family, three expressions — the stage, the community and the marketplace.</p>
+            <SectionHeading eyebrow={h.pillars.eyebrow} title={rich(h.pillars.title)} />
+            <p data-reveal className="max-w-sm text-cream/70">{h.pillars.sub}</p>
           </div>
           <ul className="mt-10 grid gap-5 sm:mt-14 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
             {pillars.map((p, i) => (
@@ -267,10 +269,10 @@ export default async function Home() {
                     <span className="absolute left-5 top-4 font-display text-6xl font-extrabold text-cream drop-shadow-lg">{p.n}</span>
                   </div>
                   <div className={`flex flex-1 flex-col p-7 ${p.panel}`}>
-                    <h3 className="text-4xl font-extrabold">{p.title}</h3>
-                    <p className="mt-3 flex-1 opacity-85">{p.text}</p>
+                    <h3 className="text-4xl font-extrabold">{h.pillars.items[i].title}</h3>
+                    <p className="mt-3 flex-1 opacity-85">{h.pillars.items[i].text}</p>
                     <span className="mt-6 inline-flex items-center gap-2 font-bold">
-                      {p.cta} <Arrow className="transition-transform duration-500 group-hover:translate-x-1.5" />
+                      {h.pillars.items[i].cta} <Arrow className="transition-transform duration-500 group-hover:translate-x-1.5" />
                     </span>
                   </div>
                 </Link>
@@ -285,24 +287,24 @@ export default async function Home() {
         <div aria-hidden="true" className="sunburst absolute right-0 top-1/2 -z-10 aspect-square w-[120vmax] -translate-y-1/2 translate-x-1/3 opacity-60" />
         <div className="container-x grid items-center gap-14 lg:grid-cols-12">
           <div className="lg:col-span-6">
-            <p data-reveal className="eyebrow mb-6 text-sun">Feel it</p>
+            <p data-reveal className="eyebrow mb-6 text-sun">{h.vibe.eyebrow}</p>
             <p data-reveal className="font-display text-[clamp(2.4rem,5.5vw,5rem)] font-extrabold leading-[1] tracking-tight">
-              “When the drum speaks, <span className="accent text-sun">everyone</span> understands.”
+              {rich(h.vibe.quote)}
             </p>
             <p data-reveal className="mt-6 max-w-md text-lg text-cream/85">
-              Sweat, smiles and the sound of the djembe — this is what a WaawAfrica night feels like. Turn it up.
+              {h.vibe.text}
             </p>
             <div data-reveal className="mt-8 flex flex-wrap gap-3">
-              <Button href="/events" variant="sun">Find your next night</Button>
-              <Button href="/events#gallery" variant="ghost">See the gallery</Button>
+              <Button href="/events" variant="sun">{h.vibe.find}</Button>
+              <Button href="/events#gallery" variant="ghost">{h.vibe.gallery}</Button>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-4 lg:col-span-5 lg:col-start-8">
             <div data-reveal className="aspect-[9/16] -rotate-3 overflow-hidden rounded-[1.75rem] bg-ink ring-4 ring-ink">
-              <AutoVideo src="/video/drum-solo.mp4" poster="/video/drum-solo.jpg" label="A solo djembe performance for a seated audience" />
+              <AutoVideo src="/video/drum-solo.mp4" poster="/video/drum-solo.jpg" label={h.vibe.videoA} />
             </div>
             <div data-reveal style={{ ["--d" as string]: "150ms" }} className="mt-14 aspect-[9/16] rotate-3 overflow-hidden rounded-[1.75rem] bg-ink ring-4 ring-ink">
-              <AutoVideo src="/video/party.mp4" poster="/video/party.jpg" label="A crowd dancing at an Afrobeat night" />
+              <AutoVideo src="/video/party.mp4" poster="/video/party.jpg" label={h.vibe.videoB} />
             </div>
           </div>
         </div>
@@ -314,19 +316,19 @@ export default async function Home() {
           <div className="relative lg:col-span-6">
             <Photo photo={img.humanityMeal} curtain quality={65} sizes="(min-width:1024px) 45vw, 100vw" className="aspect-[4/3] rounded-[2rem]" />
             <div data-reveal="right" style={{ ["--d" as string]: "250ms" }} className="absolute -bottom-8 right-4 max-w-[16rem] rotate-2 rounded-3xl bg-ember p-6 text-cream shadow-xl md:-right-6">
-              <p className="font-display text-2xl font-extrabold leading-tight">Every plate shared is a story of hope.</p>
+              <p className="font-display text-2xl font-extrabold leading-tight">{h.humanity.plate}</p>
             </div>
           </div>
           <div className="lg:col-span-5 lg:col-start-8">
             <SectionHeading
               tone="light"
-              eyebrow="Humanity & community"
-              title={<>Culture that <span className="accent text-leaf">gives back.</span></>}
-              intro="The rhythm we share in Finland has its roots in communities in Senegal. Feeding children, supporting learning and simply showing up — that is the heartbeat of WaawAfrica."
+              eyebrow={h.humanity.eyebrow}
+              title={rich(h.humanity.title, ["text-leaf"])}
+              intro={h.humanity.intro}
             />
             <div data-reveal className="mt-10 flex flex-wrap gap-3">
-              <Button href="/humanity" variant="leaf">See our work</Button>
-              <Button href="/contact?topic=humanity" variant="ghost">Support us</Button>
+              <Button href="/humanity" variant="leaf">{h.humanity.work}</Button>
+              <Button href="/contact?topic=humanity" variant="ghost">{h.humanity.support}</Button>
             </div>
           </div>
         </div>
@@ -335,8 +337,8 @@ export default async function Home() {
       {/* ───────────── MOMENTS — moving photo wall ───────────── */}
       <section className="overflow-hidden py-16 sm:py-24 md:py-32" aria-labelledby="moments-title">
         <div className="container-x mb-10 flex flex-wrap items-end justify-between gap-6">
-          <SectionHeading eyebrow="Moments" title={<span id="moments-title">Felt, not just <span className="accent text-sun">seen.</span></span>} />
-          <Button href="/events#gallery" variant="ghost">Full gallery</Button>
+          <SectionHeading eyebrow={h.moments.eyebrow} title={<span id="moments-title">{rich(h.moments.title)}</span>} />
+          <Button href="/events#gallery" variant="ghost">{h.moments.full}</Button>
         </div>
         <PhotoRow items={rowA} speed="60s" />
         <PhotoRow items={rowB} speed="70s" reverse />

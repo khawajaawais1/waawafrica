@@ -336,3 +336,7 @@ footer {
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 .adm-input:focus { border-color: var(--color-ink); box-shadow: 0 0 0 4px rgb(255 207 31 / 0.5); }
+
+/* Long Finnish compound words: allow breaking instead of overflowing small screens */
+h1, h2, h3 { overflow-wrap: break-word; hyphens: auto; }
+:lang(fi) .hero-title { font-size: clamp(2.75rem, 8.6vw, 8.25rem); }

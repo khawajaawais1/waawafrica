@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { localizeHref } from "@/lib/i18n/config";
+import { dictFor, getLocale } from "@/lib/i18n/server";
 import type { ComponentProps, ReactNode } from "react";
 
 type Variant = "sun" | "light" | "ghost" | "dark" | "ember" | "leaf";
@@ -29,7 +31,8 @@ export function Arrow({ className = "" }: { className?: string }) {
   );
 }
 
-export default function Button({ href, variant = "sun", children, className = "", external, arrow = true, ...rest }: Props) {
+export default async function Button({ href, variant = "sun", children, className = "", external, arrow = true, ...rest }: Props) {
+  const locale = await getLocale();
   const cls = `btn-sweep group inline-flex items-center justify-center gap-2.5 rounded-full px-6 py-3.5 text-sm font-bold tracking-wide transition-[color,transform] duration-300 active:scale-[0.97] ${styles[variant]} ${className}`;
   const inner = (
     <>
@@ -41,12 +44,12 @@ export default function Button({ href, variant = "sun", children, className = ""
     return (
       <a href={href} className={cls} target="_blank" rel="noopener noreferrer" {...rest}>
         {inner}
-        <span className="sr-only"> (opens in a new tab)</span>
+        <span className="sr-only"> {dictFor(locale).common.newTab}</span>
       </a>
     );
   }
   return (
-    <Link href={href} className={cls} {...rest}>
+    <Link href={localizeHref(href, locale)} className={cls} {...rest}>
       {inner}
     </Link>
   );

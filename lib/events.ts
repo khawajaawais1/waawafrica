@@ -48,6 +48,17 @@ const seed: EventItem[] = [
     ],
     genres: ["Afrobeats", "Amapiano", "Dancehall", "Latin & More"],
     poster: { url: "/images/poster-anj6.webp", width: 900, height: 1600, alt: "Poster for Afrobeat Night JKL Round 6" },
+    fi: {
+      subtitle: "Kierros 6",
+      description:
+        "Afrobeatsia, Amapianoa, Dancehallia, latinorytmejä ja paljon muuta — liverumpujen, MC:iden ja tanssin kera. Jyväskylän suurin afrikkalainen ilta palaa kuudetta kertaa.",
+      payment: "Liput Kide.appista · Käteinen tai mobiilimaksu ovelta",
+      tickets: [
+        { label: "Early Bird", note: "vain 30 lippua" },
+        { label: "Ennen puoltayötä", note: "" },
+        { label: "Puolenyön jälkeen", note: "" },
+      ],
+    },
     published: true,
     pinned: false,
     updatedAt: "2026-10-10T12:00:00.000Z",
@@ -80,7 +91,7 @@ async function readRaw(strict = false): Promise<EventItem[]> {
 }
 
 /** Cached read used by public pages; invalidated whenever an admin saves. */
-export const getEvents = unstable_cache(() => readRaw(false), ["events-v1"], { tags: [EVENTS_TAG], revalidate: 3600 });
+export const getEvents = unstable_cache(() => readRaw(false), ["events-v2"], { tags: [EVENTS_TAG], revalidate: 3600 });
 
 /** Uncached read for the admin area. */
 export const getEventsFresh = () => readRaw(true);

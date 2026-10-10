@@ -12,7 +12,7 @@ const str = (fd: FormData, k: string, max = 500) => String(fd.get(k) ?? "").trim
 
 function refreshSite() {
   revalidateTag(EVENTS_TAG, { expire: 0 });
-  revalidatePath("/", "layout");
+  revalidatePath("/[lang]", "layout");
 }
 
 async function guard() {
@@ -74,6 +74,22 @@ export async function saveEvent(_: FormState, fd: FormData): Promise<FormState> 
       .map((l, i) => ({ label: l.trim().slice(0, 60), price: (tp[i] ?? "").trim().slice(0, 20), note: (tn[i] ?? "").trim().slice(0, 60) }))
       .filter((t) => t.label || t.price);
 
+    // Finnish versions (optional — empty fields fall back to English)
+    const tlFi = fd.getAll("ticket_label_fi").map(String);
+    const tnFi = fd.getAll("ticket_note_fi").map(String);
+    const keep = tl.map((l, i) => Boolean(l.trim() || (tp[i] ?? "").trim()));
+    const ticketsFi = tl
+      .map((_, i) => ({ label: (tlFi[i] ?? "").trim().slice(0, 60), note: (tnFi[i] ?? "").trim().slice(0, 60) }))
+      .filter((_, i) => keep[i]);
+    const fiFields = {
+      title: str(fd, "title_fi", 120) || undefined,
+      subtitle: str(fd, "subtitle_fi", 60) || undefined,
+      description: str(fd, "description_fi", 2000) || undefined,
+      payment: str(fd, "payment_fi", 160) || undefined,
+      tickets: ticketsFi.some((t) => t.label || t.note) ? ticketsFi : undefined,
+    };
+    const hasFi = Object.values(fiFields).some(Boolean);
+
     const genres = str(fd, "genres", 300).split(",").map((g) => g.trim()).filter(Boolean).slice(0, 10);
 
     let poster = existing?.poster;
@@ -112,6 +128,7 @@ export async function saveEvent(_: FormState, fd: FormData): Promise<FormState> 
       tickets,
       genres,
       poster,
+      fi: hasFi ? fiFields : undefined,
       published: fd.get("published") === "on",
       pinned: fd.get("pinned") === "on",
       updatedAt: new Date().toISOString(),

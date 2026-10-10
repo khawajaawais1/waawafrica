@@ -1,5 +1,7 @@
 import Image from "next/image";
 import type { Photo as P } from "@/lib/images";
+import { localizePhoto } from "@/lib/i18n/alts";
+import { getLocale } from "@/lib/i18n/server";
 
 type Props = {
   photo: P;
@@ -14,7 +16,8 @@ type Props = {
 };
 
 /** Optimised, lazy-loaded image with blur placeholder and optional curtain reveal. */
-export default function Photo({ photo, className = "", imgClassName = "", sizes = "(min-width: 1024px) 50vw, 100vw", priority, curtain, delay = 0, position, quality = 70 }: Props) {
+export default async function Photo({ photo, className = "", imgClassName = "", sizes = "(min-width: 1024px) 50vw, 100vw", priority, curtain, delay = 0, position, quality = 70 }: Props) {
+  const { alt } = localizePhoto(photo, await getLocale());
   return (
     <div
       className={`relative overflow-hidden bg-ink-3 ${className}`}
@@ -23,7 +26,7 @@ export default function Photo({ photo, className = "", imgClassName = "", sizes 
     >
       <Image
         src={photo.src}
-        alt={photo.alt}
+        alt={alt}
         fill
         sizes={sizes}
         priority={priority}

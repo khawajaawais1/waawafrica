@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   if (!name || !isEmail(data.email) || message.length < 10) {
     return NextResponse.json({ error: "Please fill in your name, a valid email and a short message." }, { status: 422 });
   }
-  const ok = await deliver("contact", { name, email: data.email, organisation: clip(data.organisation, 160), topic: clip(data.topic, 40), message });
+  const ok = await deliver("contact", { name, email: data.email, organisation: clip(data.organisation, 160), topic: clip(data.topic, 40), message, lang: data.lang === "fi" ? "fi" : "en" });
   if (!ok) return NextResponse.json({ error: "We couldn’t send that right now. Please email us directly." }, { status: 502 });
   return NextResponse.json({ message: "Waaw! Message received — we’ll get back to you soon." });
 }

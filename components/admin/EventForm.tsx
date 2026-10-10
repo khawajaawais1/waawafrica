@@ -5,6 +5,12 @@ import { startTransition, useActionState, useRef, useState, type ChangeEvent, ty
 import { saveEvent, type FormState } from "@/app/admin/actions";
 import { isoToLocal, type EventItem, type LineupItem, type TicketTier } from "@/lib/event-types";
 
+// Stable keys for repeatable rows (index keys would mix up values when a middle row is removed)
+let rowSeq = 0;
+const rowKey = () => `r${++rowSeq}`;
+type Row<T> = T & { _k: string };
+type TicketRow = Row<TicketTier & { labelFi: string; noteFi: string }>;
+
 type Props = { event?: EventItem };
 
 /** Resize an image in the browser so uploads stay small and fast (max 1600px, WebP). */
@@ -30,8 +36,18 @@ const Field = ({ label, hint, children, className = "" }: { label: string; hint?
 
 export default function EventForm({ event }: Props) {
   const [state, action, pending] = useActionState<FormState, FormData>(saveEvent, {});
-  const [lineup, setLineup] = useState<LineupItem[]>(event?.lineup.length ? event.lineup : [{ name: "", role: "" }]);
-  const [tickets, setTickets] = useState<TicketTier[]>(event?.tickets.length ? event.tickets : [{ label: "", price: "", note: "" }]);
+  const [lineup, setLineup] = useState<Row<LineupItem>[]>(() =>
+    (event?.lineup.length ? event.lineup : [{ name: "", role: "" }]).map((l) => ({ ...l, _k: rowKey() }))
+  );
+  const [tickets, setTickets] = useState<TicketRow[]>(() =>
+    (event?.tickets.length ? event.tickets : [{ label: "", price: "", note: "" }]).map((t, i) => ({
+      ...t,
+      labelFi: event?.fi?.tickets?.[i]?.label ?? "",
+      noteFi: event?.fi?.tickets?.[i]?.note ?? "",
+      _k: rowKey(),
+    }))
+  );
+  const blankTicket = (): TicketRow => ({ label: "", price: "", note: "", labelFi: "", noteFi: "", _k: rowKey() });
   const [preview, setPreview] = useState<string | undefined>(event?.poster?.url);
   const [dims, setDims] = useState({ w: event?.poster?.width ?? 0, h: event?.poster?.height ?? 0 });
   const [removePoster, setRemovePoster] = useState(false);
@@ -128,7 +144,7 @@ export default function EventForm({ event }: Props) {
         <legend className="eyebrow -mb-2 px-1 text-ember">Line-up</legend>
         <ul className="mt-4 space-y-3">
           {lineup.map((l, i) => (
-            <li key={i} className="flex items-start gap-2">
+            <li key={l._k} className="flex items-start gap-2">
               <div className="grid flex-1 gap-2 sm:grid-cols-2">
                 <input name="lineup_name" aria-label={`Artist ${i + 1} name`} placeholder="Name" defaultValue={l.name} className="adm-input" />
                 <input name="lineup_role" aria-label={`Artist ${i + 1} role`} placeholder="Role (DJ · Helsinki)" defaultValue={l.role} className="adm-input" />
@@ -137,7 +153,7 @@ export default function EventForm({ event }: Props) {
             </li>
           ))}
         </ul>
-        <button type="button" onClick={() => setLineup([...lineup, { name: "", role: "" }])} className="mt-4 rounded-full px-4 py-2 text-sm font-bold ring-1 ring-ink/20 hover:bg-sun">+ Add artist</button>
+        <button type="button" onClick={() => setLineup([...lineup, { name: "", role: "", _k: rowKey() }])} className="mt-4 rounded-full px-4 py-2 text-sm font-bold ring-1 ring-ink/20 hover:bg-sun">+ Add artist</button>
       </fieldset>
 
       <fieldset className="rounded-[1.75rem] bg-white p-5 ring-1 ring-ink/10 sm:p-7">
@@ -152,17 +168,40 @@ export default function EventForm({ event }: Props) {
         </div>
         <ul className="mt-5 space-y-3">
           {tickets.map((t, i) => (
-            <li key={i} className="flex items-start gap-2">
+            <li key={t._k} className="flex items-start gap-2">
               <div className="grid flex-1 grid-cols-[1fr_5.5rem] gap-2 sm:grid-cols-[1fr_7rem_1fr]">
                 <input name="ticket_label" aria-label={`Ticket ${i + 1} name`} placeholder="Early Bird" defaultValue={t.label} className="adm-input" />
                 <input name="ticket_price" aria-label={`Ticket ${i + 1} price`} placeholder="6€" defaultValue={t.price} className="adm-input" />
                 <input name="ticket_note" aria-label={`Ticket ${i + 1} note`} placeholder="Note (only 30 tickets)" defaultValue={t.note} className="adm-input col-span-2 sm:col-span-1" />
+                <input name="ticket_label_fi" lang="fi" aria-label={`Ticket ${i + 1} name in Finnish`} placeholder="🇫🇮 Nimi (Ennakko)" defaultValue={t.labelFi} className="adm-input bg-sun/10" />
+                <span className="hidden sm:block" />
+                <input name="ticket_note_fi" lang="fi" aria-label={`Ticket ${i + 1} note in Finnish`} placeholder="🇫🇮 Huomio (vain 30 lippua)" defaultValue={t.noteFi} className="adm-input col-span-2 bg-sun/10 sm:col-span-1" />
               </div>
               <button type="button" onClick={() => setTickets(tickets.filter((_, j) => j !== i))} aria-label={`Remove ticket ${i + 1}`} className="grid size-12 shrink-0 place-items-center rounded-full text-xl ring-1 ring-ink/15 hover:bg-ember hover:text-cream">×</button>
             </li>
           ))}
         </ul>
-        <button type="button" onClick={() => setTickets([...tickets, { label: "", price: "", note: "" }])} className="mt-4 rounded-full px-4 py-2 text-sm font-bold ring-1 ring-ink/20 hover:bg-sun">+ Add ticket type</button>
+        <button type="button" onClick={() => setTickets([...tickets, blankTicket()])} className="mt-4 rounded-full px-4 py-2 text-sm font-bold ring-1 ring-ink/20 hover:bg-sun">+ Add ticket type</button>
+      </fieldset>
+
+      <fieldset className="grid gap-5 rounded-[1.75rem] bg-white p-5 ring-1 ring-ink/10 sm:grid-cols-2 sm:p-7">
+        <legend className="eyebrow -mb-2 px-1 text-ember">Finnish version (Suomeksi)</legend>
+        <p className="text-sm text-ink/60 sm:col-span-2">
+          Shown on the Finnish site (/fi). Leave a field empty to use the English text. Names, venue and line-up are shared by both languages.
+        </p>
+        <Field label="Title in Finnish" hint="Usually the same — only fill in if it changes">
+          <input name="title_fi" lang="fi" defaultValue={event?.fi?.title} placeholder={event?.title || "Afrobeat Night JKL"} className="adm-input" />
+        </Field>
+        <Field label="Edition / subtitle in Finnish" hint="e.g. Kierros 7">
+          <input name="subtitle_fi" lang="fi" defaultValue={event?.fi?.subtitle} className="adm-input" />
+        </Field>
+        <Field label="Description in Finnish" className="sm:col-span-2">
+          <textarea name="description_fi" lang="fi" rows={4} defaultValue={event?.fi?.description} className="adm-input resize-y" />
+        </Field>
+        <Field label="Payment note in Finnish" className="sm:col-span-2">
+          <input name="payment_fi" lang="fi" defaultValue={event?.fi?.payment} placeholder="Käteinen tai mobiilimaksu ovelta" className="adm-input" />
+        </Field>
+        <p className="text-sm text-ink/60 sm:col-span-2">Ticket names in Finnish are in the Tickets section (yellow fields).</p>
       </fieldset>
 
       <fieldset className="space-y-4 rounded-[1.75rem] bg-white p-5 ring-1 ring-ink/10 sm:p-7">

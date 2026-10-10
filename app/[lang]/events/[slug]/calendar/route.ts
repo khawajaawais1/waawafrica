@@ -1,12 +1,15 @@
 import { getBySlug } from "@/lib/events";
-import { fullTitle } from "@/lib/event-types";
+import { fullTitle, localizeEvent } from "@/lib/event-types";
 
 const ics = (d: string) => new Date(d).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 const esc = (s: string) => s.replace(/\\/g, "\\\\").replace(/([,;])/g, "\\$1").replace(/\n/g, "\\n");
 
-export async function GET(_: Request, { params }: { params: Promise<{ slug: string }> }) {
-  const e = await getBySlug((await params).slug);
-  if (!e) return new Response("Not found", { status: 404 });
+export async function GET(_: Request, { params }: { params: Promise<{ lang: string; slug: string }> }) {
+  const { lang, slug } = await params;
+  const raw = await getBySlug(slug);
+  if (!raw) return new Response("Not found", { status: 404 });
+  const fi = lang === "fi";
+  const e = localizeEvent(raw, fi ? "fi" : "en");
   const end = e.endISO || new Date(new Date(e.startISO).getTime() + 3 * 3600_000).toISOString();
   const body = [
     "BEGIN:VCALENDAR",
@@ -19,7 +22,7 @@ export async function GET(_: Request, { params }: { params: Promise<{ slug: stri
     `DTEND:${ics(end)}`,
     `SUMMARY:${esc(fullTitle(e))}`,
     `LOCATION:${esc([e.venue, e.address].filter(Boolean).join(", "))}`,
-    `DESCRIPTION:${esc([e.lineup.map((l) => l.name).join(" · "), e.ticketUrl ? `Tickets: ${e.ticketUrl}` : ""].filter(Boolean).join("\n"))}`,
+    `DESCRIPTION:${esc([e.lineup.map((l) => l.name).join(" · "), e.ticketUrl ? `${fi ? "Liput" : "Tickets"}: ${e.ticketUrl}` : ""].filter(Boolean).join("\n"))}`,
     "END:VEVENT",
     "END:VCALENDAR",
     "",

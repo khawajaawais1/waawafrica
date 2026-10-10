@@ -24,6 +24,14 @@ Deploy: push to GitHub and import into **Vercel** (zero config), or any Node hos
 4. **Redeploy** (Deployments → ⋯ → Redeploy) so the new variables are picked up.
 5. Go to **`https://your-site/admin`**, sign in, and add events. Saving updates the website straight away.
 
+## Languages (English + Finnish)
+
+* English lives at the normal URLs (`/about`), Finnish under `/fi` (`/fi/about`). The **EN | FI** switch in the header keeps you on the same page.
+* The choice is remembered (cookie `lang`). First-time visitors whose browser prefers Finnish are sent to `/fi` automatically; search engines get both versions via `hreflang` tags and the sitemap.
+* **All texts** are in `lib/i18n/en.ts` and `lib/i18n/fi.ts` (same keys — TypeScript complains if one is missing). `*word*` makes a word italic/accent, `**word**` bold.
+* Photo alt texts in Finnish: `lib/i18n/alts.ts`.
+* The admin area stays in English.
+
 ## Managing events (`/admin`)
 
 * **+ New event** — title, edition (e.g. “Round 7”), short badge (e.g. “ANJ”), start/end (Finland time), venue, address,
@@ -31,6 +39,7 @@ Deploy: push to GitHub and import into **Vercel** (zero config), or any Node hos
 * The **home page “Next event”** section, the hero sticker, the Events page and `/events/<slug>` pages all update automatically.
 * The **soonest upcoming published** event is featured. Tick **“Feature on home page”** (or press ★ Feature) to pin a specific one instead.
 * Finished events move to **Past events** by themselves. **Unpublish** hides an event without deleting it.
+* **Finnish version** (optional) — title, edition, description, payment note and ticket names in Finnish. Empty fields fall back to English on `/fi`.
 * Each event gets its own page with **Add to calendar** (`/events/<slug>/calendar`) and Google-friendly event data.
 * Locally (no Blob token) events are saved to `.data/events.json`, so you can try everything with `npm run dev`
   after creating `.env.local` from `.env.example`.
@@ -46,6 +55,7 @@ Deploy: push to GitHub and import into **Vercel** (zero config), or any Node hos
 | `/dakar-bazaar` | Coming-soon shop, category preview, waitlist, maker call |
 | `/contact` | Contact form (topic pre-selected via `?topic=`), details, FAQ |
 | `/events/[slug]` | One page per event (created from the admin) |
+| `/fi/...` | Finnish version of every page |
 | `/admin` | Team sign-in + event manager |
 
 ## Before launch — edit these
