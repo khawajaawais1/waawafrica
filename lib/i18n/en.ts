@@ -21,7 +21,7 @@ export const en = {
     language: "Language",
     langNames: { en: "English", fi: "Suomi" },
     newTab: "(opens in a new tab)",
-    onInstagram: "on Instagram (opens in a new tab)",
+    onSocial: "WaawAfrica on {network} (opens in a new tab)",
     locations: ["Jyväskylä, Finland", "Dakar, Senegal"],
     email: "Email",
     phone: "Phone",

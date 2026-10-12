@@ -4,7 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { LOCALE_COOKIE, localizeHref, stripLocale, type Locale } from "@/lib/i18n/config";
-import { nav, site, type NavKey } from "@/lib/site";
+import { nav, socialLinks, type NavKey } from "@/lib/site";
+import { SocialIcon } from "./SocialIcons";
 import Logo from "./Logo";
 
 type HeaderT = {
@@ -181,9 +182,21 @@ export default function Header({ locale, t }: { locale: Locale; t: HeaderT }) {
           </ul>
           <div className="mt-10 flex flex-wrap items-center gap-3">
             <Link href={L("/contact?topic=join")} className="rounded-full bg-sun px-6 py-3.5 font-bold text-ink">{t.joinUs}</Link>
-            <a href={site.socials.instagram} target="_blank" rel="noopener noreferrer" className="rounded-full px-6 py-3.5 font-bold ring-1 ring-cream/30">
-              Instagram<span className="sr-only"> {t.newTab}</span>
-            </a>
+            <ul className="flex gap-2">
+              {socialLinks.map((sl) => (
+                <li key={sl.key}>
+                  <a
+                    href={sl.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={`${sl.label} ${t.newTab}`}
+                    className="grid size-12 place-items-center rounded-full ring-1 ring-cream/30 transition-colors hover:bg-sun hover:text-ink"
+                  >
+                    <SocialIcon name={sl.key} />
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
         </nav>
       </div>

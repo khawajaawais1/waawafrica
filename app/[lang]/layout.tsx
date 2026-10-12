@@ -6,7 +6,7 @@ import MotionRoot from "@/components/MotionRoot";
 import { fontVars } from "@/lib/fonts";
 import { hasLocale, htmlLang, locales } from "@/lib/i18n/config";
 import { dictFor, pageMeta } from "@/lib/i18n/server";
-import { site } from "@/lib/site";
+import { site, socialLinks } from "@/lib/site";
 import "../globals.css";
 
 /** Both languages are prerendered. (No `dynamicParams = false` here — it would also block new event pages.) */
@@ -38,6 +38,21 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
         <script dangerouslySetInnerHTML={{ __html: "document.documentElement.classList.add('js')" }} />
       </head>
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              name: "WaawAfrica Events",
+              url: site.url,
+              logo: `${site.url}/images/logo.png`,
+              email: site.email,
+              telephone: site.phoneHref,
+              sameAs: socialLinks.map((s) => s.url),
+            }),
+          }}
+        />
         <a href="#main" className="sr-only fixed left-4 top-4 z-[200] rounded-full bg-sun px-5 py-3 font-bold text-ink focus:not-sr-only">
           {t.common.skip}
         </a>

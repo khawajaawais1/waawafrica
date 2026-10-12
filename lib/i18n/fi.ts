@@ -23,7 +23,7 @@ export const fi: Dict = {
     language: "Kieli",
     langNames: { en: "English", fi: "Suomi" },
     newTab: "(avautuu uuteen välilehteen)",
-    onInstagram: "Instagramissa (avautuu uuteen välilehteen)",
+    onSocial: "WaawAfrica – {network} (avautuu uuteen välilehteen)",
     locations: ["Jyväskylä, Suomi", "Dakar, Senegal"],
     email: "Sähköposti",
     phone: "Puhelin",

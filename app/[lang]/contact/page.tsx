@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { ContactForm } from "@/components/Forms";
-import { InstagramIcon } from "@/components/Footer";
+import { SocialIcon } from "@/components/SocialIcons";
 import Photo from "@/components/Photo";
 import { img } from "@/lib/images";
-import { site } from "@/lib/site";
+import { site, socialLinks } from "@/lib/site";
 import { hasLocale } from "@/lib/i18n/config";
-import { rich } from "@/lib/i18n/rich";
+import { fmt, rich } from "@/lib/i18n/rich";
 import { dictFor, getT, pageMeta } from "@/lib/i18n/server";
 
 export async function generateMetadata({ params }: PageProps<"/[lang]/contact">): Promise<Metadata> {
@@ -70,7 +70,7 @@ export default async function ContactPage() {
                 </div>
                 <div>
                   <dt className="eyebrow text-[0.65rem] text-sun">{d.common.phone}</dt>
-                  <dd className="mt-1 text-lg font-bold"><a className="link-u" href={`tel:${site.phone.replace(/\s/g, "")}`}>{site.phone}</a></dd>
+                  <dd className="mt-1 text-lg font-bold"><a className="link-u" href={`tel:${site.phoneHref}`}>{site.phone}</a></dd>
                 </div>
                 <div>
                   <dt className="eyebrow text-[0.65rem] text-sun">{d.common.basedIn}</dt>
@@ -79,10 +79,22 @@ export default async function ContactPage() {
                 <div>
                   <dt className="eyebrow text-[0.65rem] text-sun">{d.common.follow}</dt>
                   <dd className="mt-2">
-                    <a href={site.socials.instagram} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 rounded-full bg-cream/10 px-4 py-2.5 font-bold transition-colors hover:bg-sun hover:text-ink">
-                      <InstagramIcon /> {site.socials.instagramHandle}
-                      <span className="sr-only"> {d.common.onInstagram}</span>
-                    </a>
+                    <ul className="flex flex-col gap-2">
+                      {socialLinks.map((sl) => (
+                        <li key={sl.key}>
+                          <a
+                            href={sl.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-3 rounded-full bg-cream/10 px-4 py-2.5 font-bold transition-colors hover:bg-sun hover:text-ink"
+                          >
+                            <SocialIcon name={sl.key} />
+                            <span><span className="sr-only">{sl.label}: </span>{sl.handle}</span>
+                            <span className="sr-only"> {fmt(d.common.onSocial, { network: sl.label })}</span>
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
                   </dd>
                 </div>
               </dl>
