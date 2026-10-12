@@ -63,7 +63,15 @@ export default async function Footer() {
       </div>
       <div className="container-x flex flex-col justify-between gap-3 border-t border-cream/10 py-6 text-sm text-cream/50 sm:flex-row">
         <p>© {new Date().getFullYear()} {t.footer.copyright}</p>
-        <p>{t.footer.madeWith}</p>
+        <div className="flex flex-col gap-1 sm:items-end">
+          <p>{t.footer.madeWith}</p>
+          <p>
+            Powered by{" "}
+            <a href="https://www.happy2tech.fi" target="_blank" rel="noopener noreferrer" className="link-u text-cream/75 hover:text-cream">
+              Happy2tech
+            </a>
+          </p>
+        </div>
       </div>
     </footer>
   );
