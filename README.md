@@ -61,7 +61,7 @@ Deploy: push to GitHub and import into **Vercel** (zero config), or any Node hos
 ## Before launch — edit these
 
 * **`lib/site.ts`** — email & phone are **placeholders**; set your real ones and your domain (`site.url`). The bookable offerings (workshops, shows) and gallery live here; dated events are managed in `/admin`.
-* **Forms** — set the env var `FORM_WEBHOOK_URL` (Formspree, Zapier/Make, Slack webhook, your own API…) and every contact / waitlist submission is POSTed there as JSON. Without it, submissions are just logged on the server.
+* **Forms** — set `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER` and `SMTP_PASSWORD` for your SMTP provider. Contact and waitlist submissions are sent from `developers@happy2tech.fi` to `waaw.africajkl@gmail.com`; contact replies go to the visitor's email. Redeploy after changing environment variables. The SMTP account must be allowed to send as `developers@happy2tech.fi`.
 * **Copy** — story/impact text is written as a strong first draft; tweak it to your exact history.
 
 ## Assets
