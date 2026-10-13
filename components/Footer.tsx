@@ -65,12 +65,6 @@ export default async function Footer() {
         <p>© {new Date().getFullYear()} {t.footer.copyright}</p>
         <div className="flex flex-col gap-1 sm:items-end">
           <p>{t.footer.madeWith}</p>
-          <p>
-            Powered by{" "}
-            <a href="https://www.happy2tech.fi" target="_blank" rel="noopener noreferrer" className="link-u text-cream/75 hover:text-cream">
-              Happy2tech
-            </a>
-          </p>
         </div>
       </div>
     </footer>

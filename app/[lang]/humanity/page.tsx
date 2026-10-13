@@ -136,12 +136,7 @@ export default async function HumanityPage() {
               </li>
             ))}
           </ol>
-          <aside className="mt-8 flex flex-col gap-2 border-l-4 border-sun bg-cream px-5 py-4 text-ink sm:flex-row sm:items-center sm:justify-between">
-            <p className="font-display text-lg font-bold">Sponsored by Happy2tech</p>
-            <a href="https://www.happy2tech.fi" target="_blank" rel="noopener noreferrer" className="link-u w-fit text-sm font-semibold text-leaf">
-              www.happy2tech.fi
-            </a>
-          </aside>
+          
           <div data-reveal className="mt-12 flex flex-wrap gap-3">
             <Button href="/contact?topic=humanity" variant="leaf">{t.donate}</Button>
             <Button href="/contact?topic=volunteer" variant="ghost">{t.volunteer}</Button>
